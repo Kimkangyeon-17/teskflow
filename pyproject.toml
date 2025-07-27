@@ -1,21 +1,192 @@
 [project]
-name = "django-initial-setting"
+name = "taskflow"
 version = "0.1.0"
-description = "Add your description here"
+description = "노션 스타일 협업 도구 - TaskFlow"
 readme = "README.md"
 requires-python = ">=3.13"
+authors = [
+    { name = "TaskFlow Team", email = "dev@taskflow.com" }
+]
+license = { text = "MIT" }
+keywords = ["django", "collaboration", "notion", "productivity"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Framework :: Django",
+    "Framework :: Django :: 5.2",
+]
+
 dependencies = [
+    # Django 코어
     "django>=5.2.4",
-    "django-cors-headers>=4.7.0",
     "djangorestframework>=3.16.0",
-    "pillow>=11.3.0",
+    
+    # 인증 및 JWT
+    "djangorestframework-simplejwt>=5.3.1",
+    "django-allauth>=65.3.0",
+    
+    # CORS 및 보안
+    "django-cors-headers>=4.7.0",
+    
+    # 환경변수 관리
     "python-decouple>=3.8",
+    
+    # 이미지 처리
+    "pillow>=11.3.0",
+    
+    # API 문서화
+    "drf-spectacular>=0.27.0",
+    
+    # 유틸리티
+    "django-extensions>=3.2.3",
 ]
 
 [dependency-groups]
 dev = [
+    # 코드 포맷팅 및 린팅
     "black>=25.1.0",
     "flake8>=7.3.0",
+    "isort>=5.13.2",
+    
+    # 테스팅
     "pytest>=8.4.1",
     "pytest-django>=4.11.1",
+    "pytest-cov>=6.0.0",
+    "factory-boy>=3.3.1",
+    
+    # 개발 도구
+    "django-debug-toolbar>=4.4.6",
+    "ipython>=8.29.0",
+    
+    # 타입 체킹 (선택사항)
+    "mypy>=1.13.0",
+    "django-stubs>=5.1.0",
 ]
+
+production = [
+    # 프로덕션 서버
+    "gunicorn>=23.0.0",
+    "whitenoise>=6.8.2",
+    
+    # 데이터베이스
+    "psycopg2-binary>=2.9.10",  # PostgreSQL
+    "mysqlclient>=2.2.6",       # MySQL
+    
+    # 모니터링 및 로깅
+    "sentry-sdk[django]>=2.19.0",
+    
+    # 캐싱
+    "redis>=5.2.0",
+    "django-redis>=5.4.0",
+    
+    # 파일 저장
+    "boto3>=1.35.80",           # AWS S3
+    "django-storages>=1.14.4",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# Hatch 빌드 설정 - Django 프로젝트용
+[tool.hatch.build.targets.wheel]
+packages = ["apps", "config"]
+include = [
+    "manage.py",
+    "apps/**/*.py",
+    "config/**/*.py",
+    "static/**/*",
+    "templates/**/*",
+    "*.md",
+    "*.txt"
+]
+exclude = [
+    "**/__pycache__",
+    "**/*.pyc",
+    "**/migrations/*.py",
+    "!**/migrations/__init__.py",
+    "**/tests/**",
+    "**/.git*",
+    "**/.*",
+    "db.sqlite3",
+    ".env*",
+    "media/**/*"
+]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/apps",
+    "/config", 
+    "/static",
+    "/templates",
+    "/manage.py",
+    "/README.md",
+    "/pyproject.toml"
+]
+
+[tool.black]
+line-length = 100
+target-version = ['py313']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+  | migrations
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 100
+known_django = "django"
+known_first_party = "config,apps"
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "DJANGO", "FIRSTPARTY", "LOCALFOLDER"]
+
+[tool.flake8]
+max-line-length = 100
+exclude = [
+    ".git",
+    "__pycache__",
+    "*/migrations/*",
+    ".venv",
+    "build",
+    "dist"
+]
+ignore = [
+    "E203",  # whitespace before ':'
+    "W503",  # line break before binary operator
+]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+addopts = [
+    "--cov=apps",
+    "--cov-report=html",
+    "--cov-report=term-missing",
+    "--no-cov-on-fail",
+]
+
+[tool.mypy]
+python_version = "3.13"
+check_untyped_defs = true
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+plugins = ["mypy_django_plugin.main"]
+
+[tool.django-stubs]
+django_settings_module = "config.settings"
